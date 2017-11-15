@@ -1,0 +1,37 @@
+---
+version: '2'
+
+volumes:
+  mysql_data:
+    
+services:
+  # mysql
+  mysqld:
+    image: mysql:5.7
+    volumes:
+      - mysql_data:/var/lib/mysql
+      #- "./mysql/tmp:/docker-entrypoint-initdb.d"
+      - "./mysql/conf:/etc/mysql/conf.d"
+    ports:
+      - "13306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: "r00tPass"
+      MYSQL_DATABASE: "wordpress"
+      MYSQL_USER: "wpuser"
+      MYSQL_PASSWORD: "wppass"
+
+  # web(php & apache)
+  web:
+    depends_on:
+      - mysqld
+    #image: php:rc-apache
+    image: php72-apache/mysql:1.0
+    links:
+      - mysqld:mysql_host
+    ports:
+      - "10080:80"
+    volumes:
+      - "./php72-apache/www:/var/www/html"
+      #- "./php72-apache/conf:/usr/local/etc/php/conf.d"
+    environment:
+      MYSQL_HOST: mysql_host
